@@ -23,7 +23,7 @@ const typeMeta = {
 export function TaskCard({ task, requireAuth = false }: { task: TaskCardData; requireAuth?: boolean }) {
   const meta = typeMeta[task.type];
   const Icon = meta.Icon;
-  const href = requireAuth ? "/login" : `/tasks/${task.id}`;
+  const href = `/tasks/${task.id}`;
 
   return (
     <Link to={href as any} className="group block">
