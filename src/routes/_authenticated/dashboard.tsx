@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,15 @@ import { Coins, Users, ListChecks, Wallet, AlertTriangle, Copy } from "lucide-re
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (roles?.some((r) => r.role === "admin")) {
+        throw redirect({ to: "/admin" });
+      }
+    }
+  },
   head: () => ({ meta: [{ title: "Dashboard — Meta Orbit Agency" }] }),
   component: Dashboard,
 });

@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChoosePackageRouteImport } from './routes/_authenticated/choose-package'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicSetupAdminRouteImport } from './routes/api/public/setup-admin'
 import { Route as ApiPublicPaynectaWebhookRouteImport } from './routes/api/public/paynecta-webhook'
 
@@ -60,6 +61,11 @@ const AuthenticatedChoosePackageRoute =
     path: '/choose-package',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiPublicSetupAdminRoute = ApiPublicSetupAdminRouteImport.update({
   id: '/api/public/setup-admin',
   path: '/api/public/setup-admin',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/choose-package': typeof AuthenticatedChoosePackageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/choose-package': typeof AuthenticatedChoosePackageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/choose-package': typeof AuthenticatedChoosePackageRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/admin'
     | '/choose-package'
     | '/dashboard'
     | '/api/public/paynecta-webhook'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/admin'
     | '/choose-package'
     | '/dashboard'
     | '/api/public/paynecta-webhook'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/_authenticated/admin'
     | '/_authenticated/choose-package'
     | '/_authenticated/dashboard'
     | '/api/public/paynecta-webhook'
@@ -213,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChoosePackageRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/setup-admin': {
       id: '/api/public/setup-admin'
       path: '/api/public/setup-admin'
@@ -231,11 +250,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedChoosePackageRoute: typeof AuthenticatedChoosePackageRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedChoosePackageRoute: AuthenticatedChoosePackageRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
 }

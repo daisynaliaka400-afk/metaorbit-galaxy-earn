@@ -26,10 +26,17 @@ function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: toEmail(identifier), password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: toEmail(identifier), password });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Welcome back");
+    if (data.user) {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+      if (roles?.some((r) => r.role === "admin")) {
+        navigate({ to: "/admin" });
+        return;
+      }
+    }
     navigate({ to: "/dashboard" });
   };
 
