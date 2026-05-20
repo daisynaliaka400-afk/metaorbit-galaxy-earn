@@ -52,7 +52,7 @@ function AdminPanel() {
     },
   });
 
-  const setWithdrawalStatus = async (id: string, status: "completed" | "rejected") => {
+  const setWithdrawalStatus = async (id: string, status: "paid" | "rejected") => {
     const { error } = await supabase.from("withdrawals").update({ status, processed_at: new Date().toISOString() }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success(`Withdrawal ${status}`); stats.refetch(); }
