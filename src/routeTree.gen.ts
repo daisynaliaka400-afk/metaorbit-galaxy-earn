@@ -20,6 +20,7 @@ import { Route as AuthenticatedChoosePackageRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicSetupAdminRouteImport } from './routes/api/public/setup-admin'
 import { Route as ApiPublicPaynectaWebhookRouteImport } from './routes/api/public/paynecta-webhook'
+import { Route as AuthenticatedTasksTaskIdRouteImport } from './routes/_authenticated/tasks.$taskId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -77,6 +78,12 @@ const ApiPublicPaynectaWebhookRoute =
     path: '/api/public/paynecta-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedTasksTaskIdRoute =
+  AuthenticatedTasksTaskIdRouteImport.update({
+    id: '/tasks/$taskId',
+    path: '/tasks/$taskId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/choose-package': typeof AuthenticatedChoosePackageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
   '/api/public/setup-admin': typeof ApiPublicSetupAdminRoute
 }
@@ -99,6 +107,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/choose-package': typeof AuthenticatedChoosePackageRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
   '/api/public/setup-admin': typeof ApiPublicSetupAdminRoute
 }
@@ -113,6 +122,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/choose-package': typeof AuthenticatedChoosePackageRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/tasks/$taskId': typeof AuthenticatedTasksTaskIdRoute
   '/api/public/paynecta-webhook': typeof ApiPublicPaynectaWebhookRoute
   '/api/public/setup-admin': typeof ApiPublicSetupAdminRoute
 }
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/choose-package'
     | '/dashboard'
+    | '/tasks/$taskId'
     | '/api/public/paynecta-webhook'
     | '/api/public/setup-admin'
   fileRoutesByTo: FileRoutesByTo
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/choose-package'
     | '/dashboard'
+    | '/tasks/$taskId'
     | '/api/public/paynecta-webhook'
     | '/api/public/setup-admin'
   id:
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/choose-package'
     | '/_authenticated/dashboard'
+    | '/_authenticated/tasks/$taskId'
     | '/api/public/paynecta-webhook'
     | '/api/public/setup-admin'
   fileRoutesById: FileRoutesById
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaynectaWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tasks/$taskId': {
+      id: '/_authenticated/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/tasks/$taskId'
+      preLoaderRoute: typeof AuthenticatedTasksTaskIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -253,12 +273,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedChoosePackageRoute: typeof AuthenticatedChoosePackageRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedTasksTaskIdRoute: typeof AuthenticatedTasksTaskIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedChoosePackageRoute: AuthenticatedChoosePackageRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedTasksTaskIdRoute: AuthenticatedTasksTaskIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
