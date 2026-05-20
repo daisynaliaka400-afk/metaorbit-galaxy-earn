@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/payment-success")({
   validateSearch: (s: Record<string, unknown>) => ({
     reference: (s.reference as string) || "",
     status: (s.status as string) || "",
+    transaction_id: (s.transaction_id as string) || "",
   }),
   head: () => ({ meta: [{ title: "Payment Status — Meta Orbit Agency" }] }),
   component: PaymentSuccessPage,
@@ -19,10 +20,91 @@ export const Route = createFileRoute("/payment-success")({
 
 function PaymentSuccessPage() {
   const navigate = useNavigate();
-  const { reference, status: urlStatus } = Route.useSearch();
+  const { reference, status: urlStatus, transaction_id } = Route.useSearch();
   const { session, profile, refresh } = useAuth();
   const [pollCount, setPollCount] = useState(0);
+  const [activationAttempted, setActivationAttempted] = useState(false);
   const maxPolls = 30; // Poll for up to 60 seconds (30 * 2s)
+
+  // Mutation to activate payment directly when redirected with success status
+  const activateMutation = useMutation({
+    mutationFn: async () => {
+      if (!reference) throw new Error("No reference");
+      
+      // Get payment details
+      const { data: payment, error: paymentError } = await supabase
+        .from("payments")
+        .select("id, status, package_id, user_id")
+        .eq("reference", reference)
+        .maybeSingle();
+      
+      if (paymentError) throw paymentError;
+      if (!payment) throw new Error("Payment not found");
+      if (payment.status === "completed") return payment; // Already done
+      
+      // Update payment to completed
+      const { error: updateError } = await supabase
+        .from("payments")
+        .update({
+          status: "completed",
+          transaction_id: transaction_id || null,
+          payment_date: new Date().toISOString(),
+        })
+        .eq("id", payment.id);
+      
+      if (updateError) throw updateError;
+      
+      // Get package details for expiration calculation
+      const { data: pkg } = await supabase
+        .from("packages")
+        .select("duration_days")
+        .eq("id", payment.package_id)
+        .single();
+      
+      const expires = new Date(Date.now() + (pkg?.duration_days ?? 30) * 86400_000).toISOString();
+      
+      // Activate user profile
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          status: "active",
+          package_id: payment.package_id,
+          package_activated_at: new Date().toISOString(),
+          package_expires_at: expires,
+        })
+        .eq("user_id", payment.user_id);
+      
+      if (profileError) throw profileError;
+      
+      // Qualify referral if any
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("id, referred_by")
+        .eq("user_id", payment.user_id)
+        .single();
+      
+      if (prof?.referred_by) {
+        await supabase
+          .from("referrals")
+          .update({ qualified: true, qualified_at: new Date().toISOString() })
+          .eq("referred_id", prof.id);
+      }
+      
+      return payment;
+    },
+    onSuccess: () => {
+      refresh();
+    },
+  });
+
+  // If redirected with success status from Paynecta, activate immediately
+  useEffect(() => {
+    const isSuccess = urlStatus === "success" || urlStatus === "completed" || urlStatus === "successful";
+    if (isSuccess && reference && !activationAttempted && session) {
+      setActivationAttempted(true);
+      activateMutation.mutate();
+    }
+  }, [urlStatus, reference, activationAttempted, session]);
 
   // Poll for payment status
   const { data: payment, isLoading } = useQuery({

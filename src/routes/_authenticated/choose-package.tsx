@@ -54,8 +54,9 @@ function ChoosePackage() {
     if (error) { setActivating(null); toast.error(error.message); return; }
     
     // Build callback URL to redirect back after payment
+    // Paynecta will append status to this URL when redirecting back
     const callbackUrl = `${window.location.origin}/payment-success?reference=${encodeURIComponent(reference)}`;
-    const paymentLink = `https://paynecta.co.ke/pay/metaorbit?reference=${encodeURIComponent(reference)}&amount=${pkg.price}&callback_url=${encodeURIComponent(callbackUrl)}`;
+    const paymentLink = `https://paynecta.co.ke/pay/metaorbit?reference=${encodeURIComponent(reference)}&amount=${pkg.price}&redirect_url=${encodeURIComponent(callbackUrl)}&return_url=${encodeURIComponent(callbackUrl)}&callback_url=${encodeURIComponent(callbackUrl)}`;
     
     await refresh();
     toast.success("Redirecting to Paynecta…");
