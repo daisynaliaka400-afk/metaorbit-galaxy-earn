@@ -148,7 +148,7 @@ function TaskDetail() {
                     src={task.content_url}
                     title={task.title}
                     className="h-full w-full"
-                    sandbox="allow-scripts allow-same-origin allow-popups-to-escape-sandbox"
+                    sandbox="allow-scripts allow-same-origin"
                     loading="lazy"
                   />
                 )}

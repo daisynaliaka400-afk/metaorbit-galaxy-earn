@@ -52,7 +52,11 @@ function ChoosePackage() {
       status: "pending",
     });
     if (error) { setActivating(null); toast.error(error.message); return; }
-    const paymentLink = `https://paynecta.co.ke/pay/metaorbit?reference=${encodeURIComponent(reference)}&amount=${pkg.price}`;
+    
+    // Build callback URL to redirect back after payment
+    const callbackUrl = `${window.location.origin}/payment-success?reference=${encodeURIComponent(reference)}`;
+    const paymentLink = `https://paynecta.co.ke/pay/metaorbit?reference=${encodeURIComponent(reference)}&amount=${pkg.price}&callback_url=${encodeURIComponent(callbackUrl)}`;
+    
     await refresh();
     toast.success("Redirecting to Paynecta…");
     window.location.href = paymentLink;
@@ -99,7 +103,7 @@ function ChoosePackage() {
         })}
       </div>
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">After payment, your account activates automatically once Paynecta confirms.</p>
+      <p className="mt-8 text-center text-xs text-muted-foreground">After payment, you will be redirected back and your account will be activated automatically.</p>
     </div>
   );
 }
