@@ -44,6 +44,8 @@ function Index() {
       if (error) throw error;
       return data as TaskCardData[];
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
   });
 
   const visible = (tasks ?? []).filter((t) => filter === "all" || t.type === filter);

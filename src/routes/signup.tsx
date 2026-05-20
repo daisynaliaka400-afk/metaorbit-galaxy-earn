@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ function toEmail(input: string) {
 }
 
 function SignupPage() {
-  const navigate = useNavigate();
   const { ref } = Route.useSearch();
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
@@ -40,10 +39,15 @@ function SignupPage() {
         data: { username: username.trim(), phone, referral_code: referral.trim().toUpperCase() },
       },
     });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Account created — choose a package to activate");
-    navigate({ to: "/choose-package" });
+    if (error) { 
+      setLoading(false);
+      toast.error(error.message); 
+      return; 
+    }
+    toast.success("Account created — redirecting to packages...");
+    
+    // Use window.location for reliable redirect after auth
+    window.location.href = "/choose-package";
   };
 
   return (
