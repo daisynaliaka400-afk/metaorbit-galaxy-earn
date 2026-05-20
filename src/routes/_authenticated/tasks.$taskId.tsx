@@ -97,7 +97,6 @@ function TaskDetail() {
     }
     toast.success(`+KES ${Number(task.reward).toFixed(0)} added to your balance`);
     setDone(true);
-    await refreshProfile?.();
     router.invalidate();
   };
 
