@@ -89,7 +89,7 @@ function AdminPanel() {
                   <div className="text-xs text-muted-foreground">{w.phone}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setWithdrawalStatus(w.id, "completed")}>Approve</Button>
+                  <Button size="sm" onClick={() => setWithdrawalStatus(w.id, "paid")}>Approve</Button>
                   <Button size="sm" variant="destructive" onClick={() => setWithdrawalStatus(w.id, "rejected")}>Reject</Button>
                 </div>
               </div>
