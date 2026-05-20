@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/tasks/$taskId")({
 
 function TaskDetail() {
   const { taskId } = Route.useParams();
-  const { profile, refreshProfile } = useAuth();
+  const { profile } = useAuth();
   const router = useRouter();
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
