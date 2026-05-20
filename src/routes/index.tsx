@@ -66,20 +66,12 @@ function Index() {
               Watch videos, read articles, browse images, and visit websites. Pick a package, activate your account, and start earning today.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              {session ? (
-                <Button asChild size="lg" className="bg-gradient-orbit text-primary-foreground shadow-glow hover:opacity-90">
-                  <Link to="/dashboard">Go to dashboard <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-                </Button>
-              ) : (
-                <>
-                  <Button asChild size="lg" className="bg-gradient-orbit text-primary-foreground shadow-glow hover:opacity-90">
-                    <Link to="/signup">Get started free <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline">
-                    <Link to="/login">I already have an account</Link>
-                  </Button>
-                </>
-              )}
+              <Button asChild size="lg" className="bg-gradient-orbit text-primary-foreground shadow-glow hover:opacity-90">
+                <Link to="/signup">Get started free <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/login">I already have an account</Link>
+              </Button>
             </div>
 
             <div className="mt-12 grid grid-cols-3 gap-4 text-left sm:gap-8">
@@ -132,21 +124,19 @@ function Index() {
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visible.map((t) => (
-              <TaskCard key={t.id} task={t} requireAuth={!session} />
+              <TaskCard key={t.id} task={t} requireAuth={false} />
             ))}
           </div>
         )}
 
-        {!session && (
-          <div className="mt-12 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-card p-8 text-center shadow-glow sm:p-12">
-            <h3 className="font-display text-2xl font-bold sm:text-3xl">Ready to start earning?</h3>
-            <p className="mx-auto mt-2 max-w-lg text-muted-foreground">Create your free account, pick a package, and unlock unlimited tasks.</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg" className="bg-gradient-orbit text-primary-foreground shadow-glow"><Link to="/signup">Create account</Link></Button>
-              <Button asChild size="lg" variant="outline"><Link to="/login">Sign in</Link></Button>
-            </div>
+        <div className="mt-12 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-card p-8 text-center shadow-glow sm:p-12">
+          <h3 className="font-display text-2xl font-bold sm:text-3xl">Ready to start earning?</h3>
+          <p className="mx-auto mt-2 max-w-lg text-muted-foreground">Create your free account, pick a package, and unlock unlimited tasks.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button asChild size="lg" className="bg-gradient-orbit text-primary-foreground shadow-glow"><Link to="/signup">Create account</Link></Button>
+            <Button asChild size="lg" variant="outline"><Link to="/login">Sign in</Link></Button>
           </div>
-        )}
+        </div>
       </section>
 
       <footer className="border-t border-border/60 py-8 text-center text-sm text-muted-foreground">
