@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,6 +16,14 @@ import { createClient } from "@/lib/supabase/client";
 import { PLANS } from "@/lib/stripe";
 
 export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen galaxy-bg flex items-center justify-center px-4 py-12"><div className="text-white">Loading...</div></div>}>
+      <PaymentClient />
+    </Suspense>
+  );
+}
+
+function PaymentClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const planId = searchParams.get("plan") || "starter";

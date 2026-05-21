@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Star, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen galaxy-bg flex items-center justify-center px-4 py-12"><div className="text-white">Loading...</div></div>}>
+      <RegisterClient />
+    </Suspense>
+  );
+}
+
+function RegisterClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get("plan") || "free";
