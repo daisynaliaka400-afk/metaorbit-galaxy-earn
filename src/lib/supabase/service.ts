@@ -3,23 +3,35 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error(
-    "Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL in environment"
-  );
+function createSupabaseAdminClient() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error(
+      "Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL in environment"
+    );
+  }
+
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+      persistSession: false,
+    },
+  });
 }
 
-export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: {
-    persistSession: false,
-  },
-});
+let supabaseAdminInstance: ReturnType<typeof createSupabaseAdminClient> | null = null;
+
+export function getSupabaseAdmin() {
+  if (!supabaseAdminInstance) {
+    supabaseAdminInstance = createSupabaseAdminClient();
+  }
+  return supabaseAdminInstance;
+}
 
 const DEFAULT_ADMIN_EMAIL = "admin@metaorbit.com";
 const DEFAULT_ADMIN_PASSWORD = "Admin@12345";
 
 export async function ensureDefaultAdminUser() {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { data: existingRole } = await supabaseAdmin
       .from("roles")
       .select("slug")
@@ -37,6 +49,7 @@ export async function ensureDefaultAdminUser() {
   }
 
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
       .select("user_id")

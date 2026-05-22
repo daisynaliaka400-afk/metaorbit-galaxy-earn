@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/service";
+import { getSupabaseAdmin } from "@/lib/supabase/service";
 
 const WEBHOOK_SECRET = process.env.PAYNECTA_WEBHOOK_SECRET;
 
@@ -41,6 +41,8 @@ export async function POST(request: Request) {
   if (!reference) {
     return NextResponse.json({ error: "Missing payment reference" }, { status: 400 });
   }
+
+  const supabaseAdmin = getSupabaseAdmin();
 
   const { data: payment, error: paymentError } = await supabaseAdmin
     .from("payments")
