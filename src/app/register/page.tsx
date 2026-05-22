@@ -66,38 +66,34 @@ function RegisterClient() {
     setLoading(true);
 
     try {
-      const result = await registerWithUsername({
-        username: formData.username.trim(),
-        phone: formData.phone.trim(),
-        password: formData.password,
-        referral_code: searchParams.get("ref") || undefined,
-      });
+const normalizedUsername = formData.username.trim().toLowerCase();
 
-      if (!result.success) {
-        setError(result.error || "Registration failed");
-        return;
-      }
+    const result = await registerWithUsername({
+      username: normalizedUsername,
+      phone: formData.phone.trim(),
+      password: formData.password,
+      referral_code: searchParams.get("ref") || undefined,
+    });
 
-      // Assign package
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, username, phone, email")
-        .eq("username", formData.username.trim())
-        .single();
+    if (!result.success) {
+      setError(result.error || "Registration failed");
+      return;
+    }
 
-      if (!profile) {
-        setError("Profile not found after registration.");
-        return;
-      }
+    const profileId = result.user?.id;
+    if (!profileId) {
+      setError("Profile not found after registration.");
+      return;
+    }
 
-      await supabase.from("profiles").update({
-        package_id: selectedPlan.id,
-        package_activated_at: new Date().toISOString(),
-        package_expires_at: new Date(
-          Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
-        ).toISOString(),
-        status: selectedPlan.id === "starter" ? "active" : "pending",
-      }).eq("id", profile.id);
+    await supabase.from("profiles").update({
+      package_id: selectedPlan.id,
+      package_activated_at: new Date().toISOString(),
+      package_expires_at: new Date(
+        Date.now() + selectedPlan.durationDays * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      status: selectedPlan.id === "starter" ? "active" : "pending",
+    }).eq("id", profileId);
 
       if (selectedPlan.id !== "starter") {
         router.push(`/payment?plan=${selectedPlan.id}`);

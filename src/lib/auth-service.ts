@@ -104,7 +104,7 @@ export async function registerWithUsername(credentials: RegisterCredentials): Pr
       .from("profiles")
       .select("id")
       .eq("username", username.toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       return { success: false, error: "Username already exists" };
@@ -114,14 +114,15 @@ export async function registerWithUsername(credentials: RegisterCredentials): Pr
     const passwordHash = await hashPassword(password);
 
     // Create profile
+    const normalizedUsername = username.toLowerCase();
     const { data: newProfile, error: insertError } = await supabase
       .from("profiles")
       .insert([
         {
-          username: username.toLowerCase(),
+          username: normalizedUsername,
           phone,
           password_hash: passwordHash,
-          email: `${username.toLowerCase()}@metaorbit.local`,
+          email: `${normalizedUsername}@metaorbit.local`,
           status: "active",
           balance: 0,
           referral_code: referral_code?.toUpperCase(),
