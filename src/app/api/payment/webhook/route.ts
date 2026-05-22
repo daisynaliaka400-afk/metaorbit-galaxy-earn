@@ -70,26 +70,23 @@ export async function POST(request: Request) {
   const userId = payment.user_id ?? payload.user_id;
   const email = payment.metadata?.email || payload.email;
 
-  const { data: profileData } = await supabaseAdmin
+  const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("user_id, role, account_status")
-    .eq("user_id", userId || "");
+    .select("id, user_id, account_status")
+    .eq("user_id", userId || "")
+    .maybeSingle();
 
-  let profile = null;
-  if (profileData && Array.isArray(profileData) && profileData.length) {
-    profile = profileData[0];
-  }
-
-  if (!profile && email) {
+  let resolvedProfile = profile;
+  if (!resolvedProfile && email) {
     const { data: profileByEmail } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, role, account_status")
+      .select("id, user_id, account_status")
       .eq("email", email)
-      .single();
-    profile = profileByEmail;
+      .maybeSingle();
+    resolvedProfile = profileByEmail;
   }
 
-  if (!profile) {
+  if (!resolvedProfile) {
     return NextResponse.json({ error: "User profile not found" }, { status: 404 });
   }
 
@@ -109,10 +106,10 @@ export async function POST(request: Request) {
     package_name: packageName,
     pay_reference: reference,
     updated_at: new Date().toISOString(),
-  }).eq("user_id", profile.user_id);
+  }).eq("user_id", resolvedProfile.user_id || resolvedProfile.id);
 
   await supabaseAdmin.from("transactions").insert({
-    user_id: profile.user_id,
+    user_id: resolvedProfile.user_id || resolvedProfile.id,
     type: "payment",
     amount: payment.amount,
     description: `Payment completed for ${packageName}`,
