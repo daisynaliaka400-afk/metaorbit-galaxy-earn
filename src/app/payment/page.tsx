@@ -8,16 +8,21 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
-  CreditCard,
   Lock,
   ArrowLeft,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { PLANS } from "@/lib/stripe";
+import { PACKAGES, PAYNECTA_BASE_URL } from "@/lib/packages";
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen galaxy-bg flex items-center justify-center px-4 py-12"><div className="text-white">Loading...</div></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen galaxy-bg flex items-center justify-center px-4 py-12">
+          <div className="text-white">Loading...</div>
+        </div>
+      }
+    >
       <PaymentClient />
     </Suspense>
   );
@@ -30,10 +35,9 @@ function PaymentClient() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [user, setUser] = useState<{ email: string; id: string } | null>(null);
 
-  const selectedPlan = PLANS.find((p) => p.id === planId) || PLANS[0];
+  const selectedPlan = PACKAGES.find((plan) => plan.id === planId) || PACKAGES[0];
 
   useEffect(() => {
     const getUser = async () => {
@@ -45,7 +49,11 @@ function PaymentClient() {
         router.push(`/login?redirect=/payment?plan=${planId}`);
         return;
       }
-      setUser({ email: user.email!, id: user.id });
+      if (!user.email) {
+        setError("Please complete your onboarding before payment.");
+        return;
+      }
+      setUser({ email: user.email, id: user.id });
     };
     getUser();
   }, [planId, router]);
@@ -56,66 +64,26 @@ function PaymentClient() {
     setError(null);
 
     try {
-      const response = await fetch("/api/payment/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId: selectedPlan.id,
-          priceId: selectedPlan.priceId,
-          userId: user.id,
-          email: user.email,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session");
-      }
-
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Payment failed. Please try again."
+      const payUrl = new URL(PAYNECTA_BASE_URL);
+      payUrl.searchParams.set("plan", selectedPlan.id);
+      payUrl.searchParams.set("amount", selectedPlan.price.toString());
+      payUrl.searchParams.set("email", user.email);
+      payUrl.searchParams.set(
+        "returnUrl",
+        `${window.location.origin}/dashboard`
       );
+
+      window.location.href = payUrl.toString();
+    } catch (err) {
+      setError("Unable to start payment. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-screen galaxy-bg flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="glass rounded-2xl p-8">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Payment Successful!
-            </h2>
-            <p className="text-gray-400 mb-6">
-              Welcome to the {selectedPlan.name} plan. Your account has been
-              upgraded.
-            </p>
-            <Link
-              href="/dashboard"
-              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen galaxy-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
-        {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
@@ -127,16 +95,11 @@ function PaymentClient() {
             Complete Your Purchase
           </h1>
           <p className="text-gray-400">
-            You're subscribing to the{" "}
-            <span className="text-indigo-400 font-semibold">
-              {selectedPlan.name}
-            </span>{" "}
-            plan
+            You're subscribing to the <span className="text-indigo-400 font-semibold">{selectedPlan.name}</span> plan.
           </p>
         </div>
 
         <div className="glass rounded-2xl p-8">
-          {/* Error Alert */}
           {error && (
             <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
@@ -144,32 +107,22 @@ function PaymentClient() {
             </div>
           )}
 
-          {/* Plan Summary */}
           <div className="bg-white/5 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold text-white">
-                  {selectedPlan.name} Plan
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  {selectedPlan.description}
-                </p>
+                <h3 className="text-xl font-bold text-white">{selectedPlan.name} Plan</h3>
+                <p className="text-gray-400 text-sm">{selectedPlan.description}</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-extrabold text-white">
-                  ${selectedPlan.price}
-                </div>
-                <div className="text-gray-400 text-sm">/month</div>
+                <div className="text-3xl font-extrabold text-white">KSh {selectedPlan.price}</div>
+                <div className="text-gray-400 text-sm">one-time activation</div>
               </div>
             </div>
             <div className="border-t border-white/10 pt-4">
               <p className="text-sm text-gray-400 mb-3">Includes:</p>
               <ul className="space-y-2">
                 {selectedPlan.features.map((feature, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-2 text-sm text-gray-300"
-                  >
+                  <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
                     <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
                     {feature}
                   </li>
@@ -178,11 +131,10 @@ function PaymentClient() {
             </div>
           </div>
 
-          {/* Plan Switcher */}
           <div className="mb-6">
             <p className="text-sm text-gray-400 mb-3">Change plan:</p>
             <div className="grid grid-cols-3 gap-2">
-              {PLANS.map((plan) => (
+              {PACKAGES.map((plan) => (
                 <Link
                   key={plan.id}
                   href={`/payment?plan=${plan.id}`}
@@ -193,13 +145,12 @@ function PaymentClient() {
                   }`}
                 >
                   {plan.name}
-                  <div className="text-xs opacity-75">${plan.price}/mo</div>
+                  <div className="text-xs opacity-75">KSh {plan.price}</div>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Checkout Button */}
           <button
             onClick={handleCheckout}
             disabled={loading || !user}
@@ -208,23 +159,20 @@ function PaymentClient() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
+                Redirecting to Paynecta...
               </>
             ) : (
               <>
-                <CreditCard className="w-5 h-5" />
-                Pay ${selectedPlan.price}/month
+                <span className="text-white/90">Pay KSh {selectedPlan.price}</span>
               </>
             )}
           </button>
 
-          {/* Security Badge */}
           <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
             <Lock className="w-4 h-4" />
-            <span>Secured by Stripe. Cancel anytime.</span>
+            <span>Secure checkout powered by Paynecta.</span>
           </div>
 
-          {/* Back Link */}
           <div className="text-center mt-6">
             <Link
               href="/"

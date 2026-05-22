@@ -199,44 +199,39 @@ export default function HomePage() {
           {[
             {
               name: "Starter",
-              price: "$9.99",
-              period: "/month",
+              price: "KSh 499",
               features: [
-                "Up to 100 transactions/month",
-                "Basic analytics",
+                "Fast activation gateway",
+                "Basic earning tasks",
+                "Daily payout tracking",
                 "Email support",
-                "1 wallet",
               ],
               popular: false,
               href: "/register?plan=starter",
             },
             {
-              name: "Pro",
-              price: "$29.99",
-              period: "/month",
+              name: "Basic",
+              price: "KSh 1,499",
               features: [
-                "Unlimited transactions",
-                "Advanced analytics",
+                "Higher task limits",
+                "Performance analytics",
+                "Faster payouts",
                 "Priority support",
-                "5 wallets",
-                "API access",
               ],
               popular: true,
-              href: "/register?plan=pro",
+              href: "/register?plan=basic",
             },
             {
-              name: "Enterprise",
-              price: "$99.99",
-              period: "/month",
+              name: "Premium",
+              price: "KSh 3,499",
               features: [
-                "Everything in Pro",
-                "Custom integrations",
-                "Dedicated support",
-                "Unlimited wallets",
-                "White-label options",
+                "VIP campaign access",
+                "Early task rewards",
+                "Priority customer support",
+                "Higher earning ceilings",
               ],
               popular: false,
-              href: "/register?plan=enterprise",
+              href: "/register?plan=premium",
             },
           ].map((plan, index) => (
             <div
@@ -255,7 +250,6 @@ export default function HomePage() {
               <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-extrabold">{plan.price}</span>
-                <span className="text-gray-300">{plan.period}</span>
               </div>
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (

@@ -20,6 +20,10 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .single();
 
+  if (!profile || profile.account_status !== "active") {
+    redirect("/payment");
+  }
+
   // Fetch recent transactions
   const { data: transactions } = await supabase
     .from("transactions")
