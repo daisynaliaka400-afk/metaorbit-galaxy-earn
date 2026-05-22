@@ -56,11 +56,23 @@ function LoginForm() {
         return;
       }
 
-      if (data.user) {
-        router.push(redirectTo);
+      if (!data?.user) {
+        setError(
+          data?.session
+            ? "Unable to sign you in right now. Please try again."
+            : "Please verify your email or reset your password before signing in."
+        );
+        return;
       }
-    } catch {
-      setError("Network error. Please try again shortly.");
+
+      router.push(redirectTo);
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Network error. Please try again shortly."
+      );
     } finally {
       setLoading(false);
     }

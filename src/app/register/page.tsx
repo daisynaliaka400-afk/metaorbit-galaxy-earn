@@ -86,35 +86,45 @@ function RegisterClient() {
       });
 
       if (authError) {
-        setError(authError.message);
+        setError(authError.message || "Unable to create account. Please try again.");
         return;
       }
 
-      if (data.user) {
-        await supabase.from("profiles").insert({
-          user_id: data.user.id,
-          full_name: formData.full_name,
-          email: formData.email,
-          plan: selectedPlan.id,
-          wallet_balance: 0,
-          total_earned: 0,
-          account_status: selectedPlan.id === "starter" ? "active" : "pending",
-        });
-
-        if (data.session) {
-          if (selectedPlan.id !== "starter") {
-            router.push(`/payment?plan=${selectedPlan.id}`);
-            return;
-          }
-          router.push("/dashboard");
-          return;
-        }
-
-        setSuccess(true);
+      if (!data?.user) {
+        setError(
+          "Unable to create account. Please verify your email and try again."
+        );
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      setError("An unexpected error occurred. Please try again.");
+
+      await supabase.from("profiles").insert({
+        user_id: data.user.id,
+        full_name: formData.full_name,
+        email: formData.email,
+        plan: selectedPlan.id,
+        wallet_balance: 0,
+        total_earned: 0,
+        account_status: selectedPlan.id === "starter" ? "active" : "pending",
+      });
+
+      if (selectedPlan.id !== "starter") {
+        router.push(`/payment?plan=${selectedPlan.id}`);
+        return;
+      }
+
+      if (data.session) {
+        router.push("/dashboard");
+        return;
+      }
+
+      setSuccess(true);
+    } catch (error: unknown) {
+      console.error("Registration error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
       setLoading(false);
     }
