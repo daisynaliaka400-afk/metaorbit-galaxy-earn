@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { registerWithUsername } from "@/lib/auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +14,6 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
-function toEmail(input: string) {
-  return input.includes("@") ? input : `${input.trim()}@metaorbit.local`;
-}
-
 function SignupPage() {
   const { ref } = Route.useSearch();
   const [username, setUsername] = useState("");
@@ -30,23 +26,21 @@ function SignupPage() {
     e.preventDefault();
     if (password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
     setLoading(true);
-    const email = toEmail(username);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { username: username.trim(), phone, referral_code: referral.trim().toUpperCase() },
-      },
-    });
-    if (error) { 
-      setLoading(false);
-      toast.error(error.message); 
-      return; 
-    }
-    toast.success("Account created — redirecting to packages...");
     
-    // Use window.location for reliable redirect after auth
+    const result = await registerWithUsername({
+      username: username.trim(),
+      phone: phone.trim(),
+      password,
+      referral_code: referral.trim().toUpperCase(),
+    });
+    
+    if (!result.success) {
+      setLoading(false);
+      toast.error(result.error || "Registration failed");
+      return;
+    }
+    
+    toast.success("Account created — redirecting to packages...");
     window.location.href = "/choose-package";
   };
 

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { loginWithUsername } from "@/lib/auth-service";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,37 +14,33 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-function toEmail(input: string) {
-  return input.includes("@") ? input : `${input.trim()}@metaorbit.local`;
-}
-
 function LoginPage() {
-  const [identifier, setIdentifier] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email: toEmail(identifier), password });
-    if (error) { 
+    
+    const result = await loginWithUsername({ username, password });
+    
+    if (!result.success) {
       setLoading(false);
-      toast.error(error.message); 
-      return; 
+      toast.error(result.error || "Login failed");
+      return;
     }
     
     // Check for admin role
     let targetRoute = "/dashboard";
-    if (data.user) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id);
+    if (result.user?.id) {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", result.user.id);
       if (roles?.some((r) => r.role === "admin")) {
         targetRoute = "/admin";
       }
     }
     
     toast.success("Welcome back! Redirecting...");
-    
-    // Use window.location for reliable redirect after auth state change
     window.location.href = targetRoute;
   };
 
@@ -56,8 +53,8 @@ function LoginPage() {
         <p className="mt-1 text-center text-sm text-muted-foreground">Sign in to continue earning</p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="id">Username or email</Label>
-            <Input id="id" required value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="0112973841 or you@email.com" />
+            <Label htmlFor="u">Username</Label>
+            <Input id="u" required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="john_doe" />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
