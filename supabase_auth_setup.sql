@@ -139,6 +139,23 @@ INSERT INTO public.user_roles (
   ('cccccccc-cccc-cccc-cccc-cccccccccccc'::uuid, 'user', NOW())
 ON CONFLICT (user_id, role) DO NOTHING;
 
+-- ============ ENABLE PUBLIC LOGIN ACCESS ============
+-- Supabase Row Level Security is likely enabled on profiles and user_roles.
+-- The app performs anonymous username/password lookups during login,
+-- so we must allow SELECT by anon for login checks.
+CREATE POLICY IF NOT EXISTS profiles_public_login ON public.profiles
+  FOR SELECT TO anon
+  USING (true);
+
+CREATE POLICY IF NOT EXISTS user_roles_public_read ON public.user_roles
+  FOR SELECT TO anon
+  USING (true);
+
+-- If registration is done directly from the browser, allow anon inserts into profiles
+CREATE POLICY IF NOT EXISTS profiles_public_insert ON public.profiles
+  FOR INSERT TO anon
+  WITH CHECK (true);
+
 -- ============ VERIFY SETUP ============
 -- Check that admin user was created
 SELECT username, email, status FROM public.profiles WHERE username = 'admin';
