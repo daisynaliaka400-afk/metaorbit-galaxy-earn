@@ -12,3 +12,6 @@ export function createClient() {
 
   return createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
+
+// Export the client as 'supabase' for backward compatibility
+export const supabase = createClient();
